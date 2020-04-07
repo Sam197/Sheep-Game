@@ -47,8 +47,8 @@ class Sheep:         #Name is Larry
             self.curIMG = pygame.transform.rotate(self.Moving_IMGS[1], 45)
             self.x -= self.VELOSITY
             self.y -= self.VELOSITY
-            self.frame_count = 0
-            self.last_direction = (False, False)
+            self.frame_count = 0                                                    #I don't like how this is structed atm. I would like to change it
+            self.last_direction = (False, False)                                    #First, remove self.x -= etc, and make 
         elif leftKey and downKey:
             self.curIMG = pygame.transform.rotate(self.Moving_IMGS[3], -45)
             self.x -= self.VELOSITY
@@ -130,6 +130,9 @@ class Dynamite:
         self.exploding = False
         self.exploded = False
 
+    def update(self):
+        self.move()
+
     def move(self):
         if self.exploding:
             self.explode()
@@ -170,6 +173,43 @@ class Dynamite:
 
     def draw(self, screen):
         screen.blit(self.curIMG, (self.x, self.y))
+
+class Enemy:
+
+    VELOSITY = 10
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.curIMG = BLOCK    #For now
+        self.isShooting = False
+        self.projectiles = []
+
+    def update(self):
+        self.shoot()
+
+    def shoot(self):
+        if not self.isShooting:
+            self.projectiles.append(Dynamite(self.x, self.y, (None, False)))
+            self.projectiles.append(Dynamite(self.x, self.y, (True, None)))
+            self.projectiles.append(Dynamite(self.x, self.y, (None, True)))
+            self.projectiles.append(Dynamite(self.x, self.y, (False, None)))
+            self.isShooting = True
+
+        if self.isShooting:
+            for p in self.projectiles:
+                if p.exploded:
+                    self.projectiles.remove(p)
+                
+        if len(self.projectiles) == 0:
+            self.isShooting = False
+
+    def draw(self, screen):
+        screen.blit(self.curIMG, (self.x, self.y))
+        if self.isShooting:
+            for p in self.projectiles:
+                p.update()
+                p.draw(screen)
 
 def main():        
     sheep = Sheep(500, 500)
@@ -214,6 +254,10 @@ def main():
                     objects.append(dynamite)
                     dynamite_on_screen = True
 
+                if event.key == pygame.K_n:
+                    enemy = Enemy(500, 500)
+                    objects.append(enemy)
+
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
                     leftKey = False
@@ -239,7 +283,7 @@ def main():
         sheep.draw(screen)
 
         for obj in objects:
-            obj.move()
+            obj.update()
             obj.draw(screen)
 
         pygame.display.update()
