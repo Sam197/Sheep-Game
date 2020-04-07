@@ -121,7 +121,7 @@ class Dynamite:
 
     VELOSITY = 15
 
-    def __init__(self, x, y, last_direction):
+    def __init__(self, x, y, last_direction, shooter):
         self.x = x
         self.y = y
         self.curIMG = DYNAMITE_IMG
@@ -129,6 +129,7 @@ class Dynamite:
         self.image_count = 0
         self.exploding = False
         self.exploded = False
+        self.shooterIsPlayer = shooter
 
     def update(self):
         self.move()
@@ -190,13 +191,13 @@ class Enemy:
 
     def shoot(self):
         if not self.isShooting:
-            self.projectiles.append(Dynamite(self.x, self.y, (None, False)))
-            self.projectiles.append(Dynamite(self.x, self.y, (True, None)))
-            self.projectiles.append(Dynamite(self.x, self.y, (None, True)))
-            self.projectiles.append(Dynamite(self.x, self.y, (False, None)))
+            self.projectiles.append(Dynamite(self.x, self.y, (None, False), False))
+            self.projectiles.append(Dynamite(self.x, self.y, (True, None), False))
+            self.projectiles.append(Dynamite(self.x, self.y, (None, True), False))
+            self.projectiles.append(Dynamite(self.x, self.y, (False, None), False))
             self.isShooting = True
 
-        if self.isShooting:
+        if self.isShooting: 
             for p in self.projectiles:
                 if p.exploded:
                     self.projectiles.remove(p)
@@ -215,6 +216,7 @@ def main():
     sheep = Sheep(500, 500)
     screen = pygame.display.set_mode((SCREENX, SCREENY))
     pygame.display.update()
+    gameRound = 0
 
     objects = []
     #toRemove = []
@@ -250,7 +252,7 @@ def main():
                     downKey = True
                 
                 if event.key == pygame.K_SPACE and unlocked_dynamite and not dynamite_on_screen:
-                    dynamite = Dynamite(sheep.x, sheep.y, sheep.last_direction)
+                    dynamite = Dynamite(sheep.x, sheep.y, sheep.last_direction, True)
                     objects.append(dynamite)
                     dynamite_on_screen = True
 
