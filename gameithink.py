@@ -255,7 +255,7 @@ def main():
                     dynamite_on_screen = True
 
                 if event.key == pygame.K_n:
-                    enemy = Enemy(500, 500)
+                    enemy = Enemy(sheep.x, sheep.y)
                     objects.append(enemy)
 
             if event.type == pygame.KEYUP:
