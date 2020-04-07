@@ -18,6 +18,8 @@ BLOCK = pygame.image.load(os.path.join('Sprites', 'Block.png'))
 
 class Sheep:         #Name is Larry
 
+    VELOSITY = 10
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -28,8 +30,6 @@ class Sheep:         #Name is Larry
         self.Moving_IMGS = SHEEP_IMGS
         self.Still_IMGS = STILL_SHEEP
         self.curIMG = SHEEP_IMGS[0]
-        self.Xchange = 10
-        self.Ychange = 10
         self.Animation_time = 50
         self.frame_count = 0
         self.last_direction = (None, None)
@@ -45,46 +45,46 @@ class Sheep:         #Name is Larry
         
         if leftKey and upKey:
             self.curIMG = pygame.transform.rotate(self.Moving_IMGS[1], 45)
-            self.x -= self.Xchange
-            self.y -= self.Ychange
+            self.x -= self.VELOSITY
+            self.y -= self.VELOSITY
             self.frame_count = 0
             self.last_direction = (False, False)
         elif leftKey and downKey:
             self.curIMG = pygame.transform.rotate(self.Moving_IMGS[3], -45)
-            self.x -= self.Xchange
-            self.y += self.Ychange
+            self.x -= self.VELOSITY
+            self.y += self.VELOSITY
             self.frame_count = 0
             self.last_direction = (False, True)
         elif rightKey and upKey:
             self.curIMG = pygame.transform.rotate(self.Moving_IMGS[1], -45)
-            self.x += self.Xchange
-            self.y -= self.Ychange
+            self.x += self.VELOSITY
+            self.y -= self.VELOSITY
             self.frame_count = 0
             self.last_direction = (True, False)
         elif rightKey and downKey:
             self.curIMG = pygame.transform.rotate(self.Moving_IMGS[3], 45)
-            self.x += self.Xchange
-            self.y += self.Ychange
+            self.x += self.VELOSITY
+            self.y += self.VELOSITY
             self.frame_count = 0
             self.last_direction = (True, True)
         elif leftKey:
             self.curIMG = self.Moving_IMGS[2]
-            self.x -= self.Xchange
+            self.x -= self.VELOSITY
             self.frame_count = 0
             self.last_direction = (False, None)
         elif rightKey:
             self.curIMG = self.Moving_IMGS[0]
-            self.x += self.Xchange
+            self.x += self.VELOSITY
             self.frame_count = 0
             self.last_direction = (True, None)
         elif upKey:
             self.curIMG = self.Moving_IMGS[1]
-            self.y -= self.Ychange
+            self.y -= self.VELOSITY
             self.frame_count = 0
             self.last_direction = (None, False)
         elif downKey:
             self.curIMG = self.Moving_IMGS[3]
-            self.y += self.Ychange
+            self.y += self.VELOSITY
             self.frame_count = 0
             self.last_direction = (None, True)
         else:
