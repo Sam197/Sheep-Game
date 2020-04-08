@@ -16,6 +16,8 @@ EXPLODED_DYNAMITE = pygame.image.load(os.path.join('Sprites', 'Explosion.png'))
 DYNAMITE_SOUND = mixer.Sound(os.path.join('Sounds', 'Dynamite_Explostion.ogg'))
 BLOCK = pygame.image.load(os.path.join('Sprites', 'Block.png'))
 
+STAT_FONT = pygame.font.SysFont('comicsans', 50)
+
 class Sheep:         #Name is Larry
 
     VELOSITY = 10
@@ -33,6 +35,8 @@ class Sheep:         #Name is Larry
         self.Animation_time = 50
         self.frame_count = 0
         self.last_direction = (None, None)
+        self.explodable = True
+        self.health = 100
 
     def move(self, leftKey, rightKey, upKey, downKey):
 
@@ -114,6 +118,16 @@ class Sheep:         #Name is Larry
         if self.y >= SCREENY - 20:
             self.y = SCREENY- 20
 
+    def update(self):
+        if self.health <= 0:
+            gameover = True
+
+    def isHit(self):
+        self.health -= 10
+
+    def getMask(self):
+        return pygame.mask.from_surface(self.curIMG)
+
     def draw(self, screen):
         screen.blit(self.curIMG, (self.x, self.y))
 
@@ -130,9 +144,12 @@ class Dynamite:
         self.exploding = False
         self.exploded = False
         self.shooterIsPlayer = shooter
+        self.explodable = False
+        self.hasHitSheep = False
 
     def update(self):
         self.move()
+        self.collision()
 
     def move(self):
         if self.exploding:
@@ -163,6 +180,25 @@ class Dynamite:
                 self.y = SCREENY - 20
                 self.explode()
 
+    def collision(self):
+        global objects
+        global numOfEnemies
+        if self.shooterIsPlayer:
+            for obj in objects:
+                if obj.explodable:
+                    #obj_mask = obj.getMask()      Line not needed
+                    offset = self.x - obj.x, self.y - obj.y    #Line needed
+                    if pygame.mask.from_surface(self.curIMG).overlap(obj.getMask(), offset):
+                        objects.remove(obj)
+                        self.exploding = True
+                        numOfEnemies -= 1
+        elif not self.shooterIsPlayer and not self.hasHitSheep:
+            offset = self.x - sheep.x, self.y - sheep.y
+            if pygame.mask.from_surface(self.curIMG).overlap(sheep.getMask(), offset):
+                sheep.isHit()
+                self.exploding = True
+                self.hasHitSheep = True
+
     def explode(self):
         self.exploding = True
         DYNAMITE_SOUND.play()
@@ -171,7 +207,6 @@ class Dynamite:
         if self.image_count == 100:
             self.exploded = True
         
-
     def draw(self, screen):
         screen.blit(self.curIMG, (self.x, self.y))
 
@@ -185,6 +220,7 @@ class Enemy:
         self.curIMG = BLOCK    #For now
         self.isShooting = False
         self.projectiles = []
+        self.explodable = True
 
     def update(self):
         self.shoot()
@@ -204,6 +240,9 @@ class Enemy:
                 
         if len(self.projectiles) == 0:
             self.isShooting = False
+    
+    def getMask(self):
+        return pygame.mask.from_surface(self.curIMG)
 
     def draw(self, screen):
         screen.blit(self.curIMG, (self.x, self.y))
@@ -212,16 +251,25 @@ class Enemy:
                 p.update()
                 p.draw(screen)
 
-def main():        
-    sheep = Sheep(500, 500)
-    screen = pygame.display.set_mode((SCREENX, SCREENY))
-    pygame.display.update()
+def main():
+
     gameRound = 0
+    global gameover
+    gameover = False
 
+    global objects
     objects = []
-    #toRemove = []
 
-    leftKey = False
+    global numOfEnemies
+    numOfEnemies = 0
+
+    global sheep
+    sheep = Sheep(500, 500)
+
+    screen = pygame.display.set_mode((SCREENX, SCREENY))  #Making the display
+    pygame.display.update()
+
+    leftKey = False     # For Sheep movement
     rightKey = False
     upKey = False
     downKey = False
@@ -230,7 +278,7 @@ def main():
     unlocked_dynamite = True    #Change when progress
     dynamite_on_screen = False
 
-    clock = pygame.time.Clock()
+    clock = pygame.time.Clock()  #Setting up the game loop
     running = True
 
     while running:
@@ -259,6 +307,7 @@ def main():
                 if event.key == pygame.K_n:
                     enemy = Enemy(sheep.x, sheep.y)
                     objects.append(enemy)
+                    numOfEnemies += 1
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
@@ -271,22 +320,23 @@ def main():
                     downKey = False
         
         if dynamite_on_screen:
-            print(dynamite.x, dynamite.y)
+            #print(dynamite.x, dynamite.y)
             if dynamite.exploded:
                 objects.remove(dynamite)
                 dynamite_on_screen = False
-        
-
-        # for r in toRemove:
-        #     objects.remove(r)
-        #     toRemove.remove(r)
 
         sheep.move(leftKey, rightKey, upKey, downKey)
         sheep.draw(screen)
-
-        for obj in objects:
+        for obj in objects:     
             obj.update()
             obj.draw(screen)
+
+        text = STAT_FONT.render("NumOfEnemies: " + str(numOfEnemies), 1, (0,0,0))
+        screen.blit(text, (SCREENX - 10 - text.get_width(), 10))
+
+        text = STAT_FONT.render("Health: " + str(sheep.health), 1, (0,0,0))
+        screen.blit(text, (10, 10))
+
 
         pygame.display.update()
         #print(sheep.frame_count)
