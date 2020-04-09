@@ -2,6 +2,7 @@ import pygame
 from pygame import mixer
 import os
 import time
+import random
 
 pygame.init()
 
@@ -131,6 +132,8 @@ class Sheep:         #Name is Larry
 
     def draw(self, screen):
         screen.blit(self.curIMG, (self.x, self.y))
+        #text = STAT_FONT.render("Health: " + str(self.health), 1, (0,0,0))
+        #screen.blit(text, (self.x - 10, self.y - 10))
 
 class Dynamite:
 
@@ -194,11 +197,12 @@ class Dynamite:
                         self.exploding = True
                         numOfEnemies -= 1
         elif not self.shooterIsPlayer and not self.hasHitSheep:
-            offset = self.x - sheep.x, self.y - sheep.y
-            if pygame.mask.from_surface(self.curIMG).overlap(sheep.getMask(), offset):
-                sheep.isHit()
-                self.exploding = True
-                self.hasHitSheep = True
+            for sheep in sheeps:
+                offset = self.x - sheep.x, self.y - sheep.y
+                if pygame.mask.from_surface(self.curIMG).overlap(sheep.getMask(), offset):
+                    sheep.isHit()
+                    self.exploding = True
+                    self.hasHitSheep = True
 
     def explode(self):
         self.exploding = True
@@ -255,6 +259,7 @@ class Enemy:
 def main():
 
     gameRound = 0
+    roundover = False
     global gameover
     gameover = False
 
@@ -264,8 +269,9 @@ def main():
     global numOfEnemies
     numOfEnemies = 0
 
-    global sheep
-    sheep = Sheep(500, 500)
+    global sheeps
+    sheeps = []
+    sheeps.append(Sheep(0, 0))
 
     screen = pygame.display.set_mode((SCREENX, SCREENY))  #Making the display
     pygame.display.update()
@@ -281,6 +287,10 @@ def main():
 
     clock = pygame.time.Clock()  #Setting up the game loop
     running = True
+
+    for x in range(100):
+        objects.append(Enemy(random.randint(100, SCREENX -10), random.randint(100, SCREENY - 10)))
+        numOfEnemies += 1
 
     while running:
 
@@ -301,12 +311,12 @@ def main():
                     downKey = True
                 
                 if event.key == pygame.K_SPACE and unlocked_dynamite and not dynamite_on_screen:
-                    dynamite = Dynamite(sheep.x, sheep.y, sheep.last_direction, True)
+                    dynamite = Dynamite(sheeps[0].x, sheeps[0].y, sheeps[0].last_direction, True)
                     objects.append(dynamite)
                     dynamite_on_screen = True
 
                 if event.key == pygame.K_n:
-                    enemy = Enemy(sheep.x, sheep.y)
+                    enemy = Enemy(sheep[0].x, sheep[0].y)
                     objects.append(enemy)
                     numOfEnemies += 1
 
@@ -326,9 +336,10 @@ def main():
                 objects.remove(dynamite)
                 dynamite_on_screen = False
 
-        sheep.move(leftKey, rightKey, upKey, downKey)
-        sheep.update()
-        sheep.draw(screen)
+        for sheep in sheeps:
+            sheep.move(leftKey, rightKey, upKey, downKey)
+            sheep.update()
+            sheep.draw(screen)
         for obj in objects:     
             obj.update()
             obj.draw(screen)
@@ -336,17 +347,30 @@ def main():
         text = STAT_FONT.render("NumOfEnemies: " + str(numOfEnemies), 1, (0,0,0))
         screen.blit(text, (SCREENX - 10 - text.get_width(), 10))
 
-        text = STAT_FONT.render("Health: " + str(sheep.health), 1, (0,0,0))
+        text = STAT_FONT.render("Health: " + str(sheeps[0].health), 1, (0,0,0))
         screen.blit(text, (10, 10))
     
-        if not sheep.alive:
-            print("Dead")
-            gameover = True
+        for sheep in sheeps:
+            if not sheep.alive:
+                sheeps.remove(sheep)
+
+        if len(sheeps) <= 0:
             running = False
+            gameover = True
 
         pygame.display.update()
         #print(sheep.frame_count)
         #print(sheep.x, sheep.y)
- 
+    
+    while gameover:
 
+        screen.fill((255,255,255))
+
+        for obj in objects:
+            obj.draw(screen)
+        
+        text = STAT_FONT.render("GameOver", 1, (0,0,0))
+        screen.blit(text, (100, 100))
+
+        pygame.display.update()
 main()
