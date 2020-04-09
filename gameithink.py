@@ -18,6 +18,7 @@ DYNAMITE_SOUND = mixer.Sound(os.path.join('Sounds', 'Dynamite_Explostion.ogg'))
 BLOCK = pygame.image.load(os.path.join('Sprites', 'Block.png'))
 
 STAT_FONT = pygame.font.SysFont('comicsans', 50)
+HEALTH_FONT = pygame.font.SysFont('comicsans', 20)
 
 class Sheep:         #Name is Larry
 
@@ -132,8 +133,8 @@ class Sheep:         #Name is Larry
 
     def draw(self, screen):
         screen.blit(self.curIMG, (self.x, self.y))
-        #text = STAT_FONT.render("Health: " + str(self.health), 1, (0,0,0))
-        #screen.blit(text, (self.x - 10, self.y - 10))
+        text = HEALTH_FONT.render("Health: " + str(self.health), 1, (0,0,0))
+        screen.blit(text, (self.x - 20, self.y - 15))
 
 class Dynamite:
 
@@ -288,8 +289,8 @@ def main():
     clock = pygame.time.Clock()  #Setting up the game loop
     running = True
 
-    for x in range(100):
-        objects.append(Enemy(random.randint(100, SCREENX -10), random.randint(100, SCREENY - 10)))
+    for x in range(10):
+        objects.append(Enemy(random.randint(100, SCREENX -30), random.randint(100, SCREENY - 30)))
         numOfEnemies += 1
 
     while running:
@@ -311,12 +312,13 @@ def main():
                     downKey = True
                 
                 if event.key == pygame.K_SPACE and unlocked_dynamite and not dynamite_on_screen:
-                    dynamite = Dynamite(sheeps[0].x, sheeps[0].y, sheeps[0].last_direction, True)
-                    objects.append(dynamite)
-                    dynamite_on_screen = True
+                    for sheep in sheeps:
+                        dynamite = Dynamite(sheeps[0].x, sheeps[0].y, sheeps[0].last_direction, True)
+                        objects.append(dynamite)
+                        dynamite_on_screen = True
 
                 if event.key == pygame.K_n:
-                    enemy = Enemy(sheep[0].x, sheep[0].y)
+                    enemy = Enemy(sheeps[0].x, sheeps[0].y)
                     objects.append(enemy)
                     numOfEnemies += 1
 
