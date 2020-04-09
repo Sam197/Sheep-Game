@@ -37,6 +37,7 @@ class Sheep:         #Name is Larry
         self.last_direction = (None, None)
         self.explodable = True
         self.health = 100
+        self.alive = True
 
     def move(self, leftKey, rightKey, upKey, downKey):
 
@@ -120,7 +121,7 @@ class Sheep:         #Name is Larry
 
     def update(self):
         if self.health <= 0:
-            gameover = True
+            self.alive = False
 
     def isHit(self):
         self.health -= 10
@@ -326,6 +327,7 @@ def main():
                 dynamite_on_screen = False
 
         sheep.move(leftKey, rightKey, upKey, downKey)
+        sheep.update()
         sheep.draw(screen)
         for obj in objects:     
             obj.update()
@@ -336,7 +338,11 @@ def main():
 
         text = STAT_FONT.render("Health: " + str(sheep.health), 1, (0,0,0))
         screen.blit(text, (10, 10))
-
+    
+        if not sheep.alive:
+            print("Dead")
+            gameover = True
+            running = False
 
         pygame.display.update()
         #print(sheep.frame_count)
