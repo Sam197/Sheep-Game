@@ -40,6 +40,9 @@ class Sheep:         #Name is Larry
         self.explodable = True
         self.health = 100
         self.alive = True
+        self.dynamite_allowed_on_screen = 2
+        self.player_dynamite = []
+        self.score = 0
 
     def move(self, leftKey, rightKey, upKey, downKey):
 
@@ -124,6 +127,17 @@ class Sheep:         #Name is Larry
     def update(self):
         if self.health <= 0:
             self.alive = False
+        for dynamite in self.player_dynamite:
+            dynamite.update()
+            if dynamite.exploded:
+                if dynamite.has_hit_enemy:
+                    self.score += 1
+                self.player_dynamite.remove(dynamite)
+                
+
+    def fire(self):
+        if len(self.player_dynamite) <= self.dynamite_allowed_on_screen:
+            self.player_dynamite.append(Dynamite(self.x, self.y, self.last_direction, True))
 
     def isHit(self):
         self.health -= 10
@@ -135,6 +149,11 @@ class Sheep:         #Name is Larry
         screen.blit(self.curIMG, (self.x, self.y))
         text = HEALTH_FONT.render("Health: " + str(self.health), 1, (0,0,0))
         screen.blit(text, (self.x - 20, self.y - 15))
+        text = HEALTH_FONT.render("Score: " + str(self.score), 1, (0,0,0))
+        screen.blit(text, (self.x - 20, self.y - 30))
+        for dynamite in self.player_dynamite:
+            dynamite.draw(screen)
+
 
 class Dynamite:
 
@@ -151,6 +170,7 @@ class Dynamite:
         self.shooterIsPlayer = shooter
         self.explodable = False
         self.hasHitSheep = False
+        self.has_hit_enemy = False
 
     def update(self):
         self.move()
@@ -197,6 +217,7 @@ class Dynamite:
                         objects.remove(obj)
                         self.exploding = True
                         numOfEnemies -= 1
+                        self.has_hit_enemy = True
         elif not self.shooterIsPlayer and not self.hasHitSheep:
             for sheep in sheeps:
                 offset = self.x - sheep.x, self.y - sheep.y
@@ -313,9 +334,7 @@ def main():
                 
                 if event.key == pygame.K_SPACE and unlocked_dynamite and not dynamite_on_screen:
                     for sheep in sheeps:
-                        dynamite = Dynamite(sheeps[0].x, sheeps[0].y, sheeps[0].last_direction, True)
-                        objects.append(dynamite)
-                        dynamite_on_screen = True
+                        sheep.fire()
 
                 if event.key == pygame.K_n:
                     enemy = Enemy(sheeps[0].x, sheeps[0].y)
@@ -331,12 +350,6 @@ def main():
                     upKey = False
                 if event.key == pygame.K_DOWN:
                     downKey = False
-        
-        if dynamite_on_screen:
-            #print(dynamite.x, dynamite.y)
-            if dynamite.exploded:
-                objects.remove(dynamite)
-                dynamite_on_screen = False
 
         for sheep in sheeps:
             sheep.move(leftKey, rightKey, upKey, downKey)
