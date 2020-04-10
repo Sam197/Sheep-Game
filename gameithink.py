@@ -294,6 +294,7 @@ def main():
     global sheeps
     sheeps = []
     sheeps.append(Sheep(0, 0))
+    sheeps.append(Sheep(10,10))
 
     screen = pygame.display.set_mode((SCREENX, SCREENY))  #Making the display
     pygame.display.update()
@@ -362,9 +363,11 @@ def main():
         text = STAT_FONT.render("NumOfEnemies: " + str(numOfEnemies), 1, (0,0,0))
         screen.blit(text, (SCREENX - 10 - text.get_width(), 10))
 
-        text = STAT_FONT.render("Health: " + str(sheeps[0].health), 1, (0,0,0))
+        text = STAT_FONT.render("Health[0]: " + str(sheeps[0].health), 1, (0,0,0))
         screen.blit(text, (10, 10))
-    
+        text = STAT_FONT.render("Score[0]: " + str(sheeps[0].score), 1, (0,0,0))
+        screen.blit(text, (10, 30))
+
         for sheep in sheeps:
             if not sheep.alive:
                 sheeps.remove(sheep)
